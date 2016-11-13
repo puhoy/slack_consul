@@ -1,0 +1,19 @@
+{
+  "old": {
+    "consul": [
+      "consul"
+    ],
+    "service1": [
+      "node1"
+    ]
+  },
+  "new": {
+    "consul": [
+      "consul"
+    ],
+    "service1": [
+      "node1",
+      "node2"
+    ]
+  }
+}

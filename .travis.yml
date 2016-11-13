@@ -1,0 +1,12 @@
+language: python
+python:
+  - 3.5
+
+services:
+  - docker
+
+install:
+  - docker build -t slack_consul .
+
+script:
+  - docker run --rm slack_consul /env/bin/python setup.py test
