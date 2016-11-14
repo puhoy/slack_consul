@@ -203,7 +203,7 @@ def slack_diff(difference):
         for service, nodes in new_nodes.items():
             logging.info(nodes)
             nodes_kv.append({"title": service,
-                             "value": ', '.join(nodes),
+                             "value": ', \n'.join(nodes),
                              "short": False})
 
         j["attachments"].append({
@@ -222,11 +222,10 @@ def loop(timeout=10):
     new_services = OrderedDict(sorted(get_services().items()))
     while not new_services:
         new_services = OrderedDict(sorted(get_services().items()))
-        services = new_services
         sleep(timeout)
+    services = new_services
     slack_start(new_services)
     while True:
-        new_services = {}
         try:
             new_services = OrderedDict(sorted(get_services().items()))
         except Exception as e:

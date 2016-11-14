@@ -14,4 +14,4 @@ WORKDIR /app
 COPY . /app
 RUN virtualenv /env && /env/bin/pip3 install -e .
 
-CMD ["/env/bin/python", "slack_consul"]
+CMD ["/env/bin/slack_consul"]
