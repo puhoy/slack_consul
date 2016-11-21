@@ -6,7 +6,7 @@ install_reqs = parse_requirements("requirements.txt", session=False)
 requirements = [str(ir.req) for ir in install_reqs]
 
 setup(
-    name="slack_consul",
+    name="slack-consul",
     version=0.1,
     py_modules=['slack_consul.slack_consul'],
     install_requires=requirements,

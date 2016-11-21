@@ -7,6 +7,5 @@ Pygments==2.1.3
 python-consul==0.6.1
 requests==2.11.1
 six==1.10.0
-slack-consul==0.1
 slacker==0.9.29
 wcwidth==0.1.7

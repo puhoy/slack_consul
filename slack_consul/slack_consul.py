@@ -29,10 +29,10 @@ def send_to_slack(j):
     ret = requests.post(conf['slack_link'], json=j)
     logging.info(ret.text)
 
-c = consul.Consul(host=conf['consul_address'], port=conf['consul_port'])
 
 def get_consul():
     try:
+        c = consul.Consul(host=conf['consul_address'], port=conf['consul_port'])
         c.status.leader()
         conf['connected'] = True
     except Exception as e:

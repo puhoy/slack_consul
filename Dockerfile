@@ -1,17 +1,10 @@
-FROM gliderlabs/alpine:3.3
+FROM ubuntu:14.04
 
-RUN apk add --update \
-    python3 \
-    python3-dev \
-    build-base \
-    ca-certificates \
-  && python3 -m ensurepip \
-  && pip3 install virtualenv \
-  && rm -rf /var/cache/apk/*
+RUN mkdir -p /data
+COPY . /data
+WORKDIR /data
 
-WORKDIR /app
+RUN apt-get update && apt-get install git python python-dev python3 python3-dev python3-pip python-pip build-essential -y && apt-get clean
+RUN pip3 install -e .
 
-COPY . /app
-RUN virtualenv /env && /env/bin/pip3 install -e .
-
-CMD ["/env/bin/slack_consul"]
+CMD ["slack_consul"]
