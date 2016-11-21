@@ -18,11 +18,13 @@ conf['consul_port'] = int(os.environ.get('SC_CONSUL_PORT', 8500))  # consul addr
 conf['additional_vars'] = os.environ.get('SC_ADDITIONAL_VARS', '').split(
     ',')  # additional vars to append to message (fetched from consul)
 
+conf['bot_name'] = os.environ.get('SC_BOT_NAME', 'infradiff bot')
+
 conf['connected'] = True
 
 
 def send_to_slack(j):
-    j["username"] = "infradiff bot"
+    j["username"] = conf['bot_name']
     j["icon_emoji"] = ":ghost:"
     ret = requests.post(conf['slack_link'], json=j)
     logging.info(ret.text)
@@ -153,7 +155,7 @@ def slack_diff(difference):
     new_nodes = difference['new_nodes']
     missing_nodes = difference['missing_nodes']
 
-    j = {"username": "infradiff bot",
+    j = {"username": conf['bot_name'],
          "icon_emoji": ":ghost:",
          "text": msg,
          "attachments": []
