@@ -9,7 +9,7 @@
     SC_CONSUL_PORT' - consul port, default: 8500
     SC_ADDITIONAL_VARS - list of additional vars to report
     SC_BOT_NAME - bot name to use, default: 'infradiff bot'
-
+    SC_SLACK_CHANNEL - channel to post to (overrides config of api link)
 
 ### starting
 (create a virtualenv, set your envvars, pip install -e .)
