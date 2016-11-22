@@ -18,6 +18,8 @@ conf['consul_port'] = int(os.environ.get('SC_CONSUL_PORT', 8500))  # consul addr
 if os.environ.get('SC_ADDITIONAL_VARS', False):
     conf['additional_vars'] = os.environ.get('SC_ADDITIONAL_VARS').split(
         ',')  # additional vars to append to message (fetched from consul)
+else:
+    conf['additional_vars'] = []
 
 conf['bot_name'] = os.environ.get('SC_BOT_NAME', 'infradiff bot')
 conf['slack_channel'] = os.environ.get('SC_SLACK_CHANNEL', None)

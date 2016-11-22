@@ -1,4 +1,4 @@
-## get slack notofication about differences in consul services
+## get slack notification about differences in consul services
 
 
 ### envvars
