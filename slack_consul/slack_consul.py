@@ -52,7 +52,7 @@ def send_to_slack(j):
     j["username"] = conf['bot_name']
     j["icon_emoji"] = ":ghost:"
     ret = requests.post(conf['slack_link'], json=j)
-    logging.info(ret.text)
+    logger.info(ret.text)
 
 
 def get_consul():
@@ -70,7 +70,7 @@ def get_consul():
                                "text": '%s' % e,
                                "color": RED
                            }]})
-        logging.error('cant connect to consul! (%s)' % e)
+        logger.error('cant connect to consul! (%s)' % e)
         conf['connected'] = False
         return False
     return c
@@ -138,7 +138,7 @@ def get_services():
         return {}
     nodes = c.agent.services()
     new_services = {}
-    # logging.debug(nodes)
+    # logger.debug(nodes)
     for node, vals in nodes.items():
         service = vals['Service']
         if not new_services.get(service, False):
@@ -178,7 +178,7 @@ def slack_start(services):
             "fields": vars_to_send
         })
 
-    logging.info('sending on slack: %s' % json.dumps(j, indent=2))
+    logger.info('sending on slack: %s' % json.dumps(j, indent=2))
     send_to_slack(j)
 
 
@@ -224,7 +224,7 @@ def slack_health(health):
 
 
 def slack_diff(difference):
-    logging.info('slacking diff...')
+    logger.info('slacking diff...')
     msg = "something happened! "
     if conf['notify_users']:
         for user in conf['notify_users']:
@@ -281,7 +281,7 @@ def slack_diff(difference):
     if new_nodes:
         nodes_kv = []
         for service, nodes in new_nodes.items():
-            logging.info(nodes)
+            logger.info(nodes)
             nodes_kv.append({"title": service,
                              "value": ', \n'.join(nodes),
                              "short": False})
@@ -323,7 +323,7 @@ def loop(timeout=10):
         try:
             new_services = OrderedDict(sorted(get_services().items()))
         except Exception as e:
-            logging.error('error getting services: %s' % e)
+            logger.error('error getting services: %s' % e)
             send_to_slack({"text": 'error getting services',
                            "attachments": [{
                                "text": '%s' % e,
@@ -335,10 +335,10 @@ def loop(timeout=10):
             # there was en error while connection to consul that should be already handled
             continue
 
-        logging.debug(diff)
-        logging.debug(no_diff)
+        logger.debug(diff)
+        logger.debug(no_diff)
         if not has_empty_values(diff):
-            # logging.info('diff in services! new services: %s' % new_services)
+            # logger.info('diff in services! new services: %s' % new_services)
             slack_diff(diff)
             services = new_services
 
@@ -357,6 +357,6 @@ def loop(timeout=10):
 
 
 if __name__ == '__main__':
-    logging.info('starting!')
-    logging.info('using %s' % conf['slack_link'])
+    logger.info('starting!')
+    logger.info('using %s' % conf['slack_link'])
     loop()
