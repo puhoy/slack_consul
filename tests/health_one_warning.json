@@ -1,0 +1,43 @@
+{
+  "passing": {
+    "unique_service_1:1234": {
+      "ServiceName": "s1",
+      "Status": "passing",
+      "ServiceID": "unique_service_1:1234",
+      "ModifyIndex": 4472,
+      "Notes": "",
+      "Name": "Service \"s1\" check",
+      "CheckID": "service:unique_service_1:1234",
+      "CreateIndex": 4467,
+      "Node": "nodename",
+      "Output": "some output"
+    },
+    "unique_service_2:2345": {
+      "ServiceName": "s2",
+      "Status": "passing",
+      "ServiceID": "unique_service_2:2345",
+      "ModifyIndex": 4645,
+      "Notes": "",
+      "Name": "Service \"s2\" check",
+      "CheckID": "service:unique_service_2:2345",
+      "CreateIndex": 4644,
+      "Node": "nodename",
+      "Output": "foo\n"
+    }
+  },
+  "warning": {
+    "unique_service_3:3456": {
+      "ServiceName": "s3",
+      "Status": "warning",
+      "ServiceID": "unique_service_3:3456",
+      "ModifyIndex": 4469,
+      "Notes": "",
+      "Name": "Service \"s3\" check",
+      "CheckID": "service:unique_service_3:3456",
+      "CreateIndex": 4461,
+      "Node": "nodename",
+      "Output": "baz"
+    }
+  },
+  "critical": {}
+}

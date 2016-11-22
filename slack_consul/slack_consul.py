@@ -6,9 +6,7 @@ import logging
 import json
 from collections import OrderedDict
 from slack_consul.config import conf
-
-logging.basicConfig(format='%(asctime)s module: %(module)s line: %(lineno)d :: %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
+from logstash_formatter import LogstashFormatterV1
 
 conf['slack_link'] = os.environ.get('SC_SLACK_LINK', False)  # link to report to
 conf['notify_users'] = os.environ.get('SC_NOTIFY_USERS', '').split(
@@ -23,7 +21,29 @@ else:
 
 conf['bot_name'] = os.environ.get('SC_BOT_NAME', 'infradiff bot')
 conf['slack_channel'] = os.environ.get('SC_SLACK_CHANNEL', None)
+
+conf['loglevel'] = os.environ.get('SC_LOGLEVEL', 'production')
 conf['connected'] = True
+
+
+loglevel = {
+    "production": logging.INFO,
+    "debug": logging.DEBUG
+}
+
+
+logger = logging.getLogger()
+logger.setLevel(loglevel[conf['loglevel']])
+handler = logging.StreamHandler()
+formatter = LogstashFormatterV1()
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+
+RED = "#cc0000"
+YELLOW = "#e6e600"
+GREEN = "#36a64f"
 
 
 def send_to_slack(j):
@@ -48,7 +68,7 @@ def get_consul():
             send_to_slack({"text": msg,
                            "attachments": [{
                                "text": '%s' % e,
-                               "color": "#cc0000"
+                               "color": RED
                            }]})
         logging.error('cant connect to consul! (%s)' % e)
         conf['connected'] = False
@@ -99,6 +119,19 @@ def get_diff_services(old, new):
             'missing_nodes': missing_nodes}
 
 
+def get_health(state):
+    c = get_consul()
+    if not c:
+        return {}
+    services = c.health.state(state)[1]
+    new_health = {}
+
+    for service in services:
+        if service['ServiceID']:
+            new_health[service['ServiceID']] = service
+    return new_health
+
+
 def get_services():
     c = get_consul()
     if not c:
@@ -135,7 +168,7 @@ def slack_start(services):
         "attachments": [
             {
                 "text": nodes_text,
-                "color": "#36a64f"
+                "color": GREEN
             },
         ]
     }
@@ -147,6 +180,47 @@ def slack_start(services):
 
     logging.info('sending on slack: %s' % json.dumps(j, indent=2))
     send_to_slack(j)
+
+
+def get_diff_health(old_health, new_health):
+    diff = {}
+    for state in ['critical', 'passing', 'warning']:
+        diff[state] = {}
+        new = set(new_health[state]) - set(old_health[state])
+        for item in new:
+            diff[state][item] = new_health[state][item]
+    return diff
+
+
+def slack_health(health):
+    print(health)
+    colors = {
+        'critical': RED,
+        'warning': YELLOW,
+        'passing': GREEN
+    }
+
+    for state, service_dict in health.items():
+        j = {"text": 'new services in %s state' % state,
+             "attachments": [],
+             }
+
+        for k, details in service_dict.items():
+            s = {
+                "text": details['ServiceID'],
+                "fields": [
+                    {
+                        "title": "Output",
+                        "value": details['Output'],
+                    }
+                ]
+            }
+            if colors.get(state, False):
+                s["color"] = colors[state]
+            j["attachments"].append(s)
+
+        if j["attachments"]:
+            send_to_slack(j)
 
 
 def slack_diff(difference):
@@ -161,7 +235,6 @@ def slack_diff(difference):
     missing_nodes = difference['missing_nodes']
 
     j = {"username": conf['bot_name'],
-         "icon_emoji": ":ghost:",
          "text": msg,
          "attachments": []
          }
@@ -182,14 +255,14 @@ def slack_diff(difference):
         t += ", ".join(new_services)
         j["attachments"].append({
             "text": t,
-            "color": "#36a64f"
+            "color": GREEN
         })
     if missing_services:
         t = "missing services!\n"
         t += ", ".join(missing_services)
         j["attachments"].append({
             "text": t,
-            "color": "#cc0000"
+            "color": RED
         })
 
     if missing_nodes:
@@ -202,7 +275,7 @@ def slack_diff(difference):
         j["attachments"].append({
             "text": "missing nodes!",
             "fields": nodes_kv,
-            "color": "#cc0000",
+            "color": RED,
         })
 
     if new_nodes:
@@ -215,10 +288,17 @@ def slack_diff(difference):
 
         j["attachments"].append({
             "text": "new nodes!",
-            "color": "#36a64f",
+            "color": GREEN,
             "fields": nodes_kv
         })
     send_to_slack(j)
+
+
+def has_empty_values(d):
+    for k, v in d.items():
+        if d[k]:
+            return False
+    return True
 
 
 def loop(timeout=10):
@@ -232,6 +312,13 @@ def loop(timeout=10):
         sleep(timeout)
     services = new_services
     slack_start(new_services)
+
+    health = {
+        'passing': get_health('passing'),
+        'warning': get_health('warning'),
+        'critical': get_health('critical')
+    }
+
     while True:
         try:
             new_services = OrderedDict(sorted(get_services().items()))
@@ -240,24 +327,32 @@ def loop(timeout=10):
             send_to_slack({"text": 'error getting services',
                            "attachments": [{
                                "text": '%s' % e,
-                               "color": "#cc0000"
+                               "color": RED
                            }]})
             continue
         diff = get_diff_services(old=services, new=new_services)
         if diff == {}:
             # there was en error while connection to consul that should be already handled
             continue
-        is_different = False
-        for k, v in diff.items():
-            if v:
-                logging.info('thats different!')
-                is_different = True
+
         logging.debug(diff)
         logging.debug(no_diff)
-        if is_different:
+        if not has_empty_values(diff):
             # logging.info('diff in services! new services: %s' % new_services)
             slack_diff(diff)
             services = new_services
+
+        # health
+        new_health = {
+            'passing': get_health('passing'),
+            'warning': get_health('warning'),
+            'critical': get_health('critical')
+        }
+
+        health_diff = get_diff_health(health, new_health)
+        if not has_empty_values(health_diff):
+            slack_health(health_diff)
+            health = new_health
         sleep(timeout)
 
 
