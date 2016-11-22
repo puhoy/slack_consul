@@ -15,15 +15,18 @@ conf['notify_users'] = os.environ.get('SC_NOTIFY_USERS', '').split(
     ',')  # users to add to message with @user
 conf['consul_address'] = os.environ.get('SC_CONSUL_ADDRESS', 'consul.service.consul')  # consul address
 conf['consul_port'] = int(os.environ.get('SC_CONSUL_PORT', 8500))  # consul address
-conf['additional_vars'] = os.environ.get('SC_ADDITIONAL_VARS', '').split(
-    ',')  # additional vars to append to message (fetched from consul)
+if os.environ.get('SC_ADDITIONAL_VARS', False):
+    conf['additional_vars'] = os.environ.get('SC_ADDITIONAL_VARS').split(
+        ',')  # additional vars to append to message (fetched from consul)
 
 conf['bot_name'] = os.environ.get('SC_BOT_NAME', 'infradiff bot')
-
+conf['slack_channel'] = os.environ.get('SC_SLACK_CHANNEL', None)
 conf['connected'] = True
 
 
 def send_to_slack(j):
+    if conf['slack_channel']:
+        j['channel'] = conf['slack_channel']
     j["username"] = conf['bot_name']
     j["icon_emoji"] = ":ghost:"
     ret = requests.post(conf['slack_link'], json=j)
