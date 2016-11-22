@@ -9,4 +9,4 @@ install:
   - docker build -t slack_consul .
 
 script:
-  - docker run --rm slack_consul /env/bin/python setup.py test
+  - docker run --rm slack_consul python3 setup.py test
