@@ -9,3 +9,4 @@ requests==2.11.1
 six==1.10.0
 slacker==0.9.29
 wcwidth==0.1.7
+logstash-formatter==0.5.16
