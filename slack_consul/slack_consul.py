@@ -136,7 +136,7 @@ def get_services():
     c = get_consul()
     if not c:
         return {}
-    nodes = c.agent.services()
+    nodes = c.catalog.services()
     new_services = {}
     # logger.debug(nodes)
     for node, vals in nodes.items():
