@@ -7,7 +7,7 @@ requirements = [str(ir.req) for ir in install_reqs]
 
 setup(
     name="slack-consul",
-    version=0.1,
+    version="0.0.2",
     py_modules=['slack_consul.slack_consul'],
     install_requires=requirements,
     test_suite="nose.collector",
