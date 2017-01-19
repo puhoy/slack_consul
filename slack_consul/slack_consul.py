@@ -162,7 +162,7 @@ def slack_start(services):
     for k, v in vars.items():
         vars_to_send.append({"title": k,
                              "value": v,
-                             "short": False})
+                             "short": True})
     j = {
         "text": msg,
         "attachments": [
@@ -243,7 +243,7 @@ def slack_diff(difference):
     for k, v in vars.items():
         vars_to_send.append({"title": k,
                              "value": v,
-                             "short": False})
+                             "short": True})
     if vars_to_send:
         j["attachments"].append({
             "text": "you told me to append these variables from consul",
@@ -270,7 +270,7 @@ def slack_diff(difference):
         for service, nodes in missing_nodes.items():
             nodes_kv.append({"title": service,
                              "value": ', '.join(nodes),
-                             "short": False})
+                             "short": True})
 
         j["attachments"].append({
             "text": "missing nodes!",
@@ -284,7 +284,7 @@ def slack_diff(difference):
             logger.info(nodes)
             nodes_kv.append({"title": service,
                              "value": ', \n'.join(nodes),
-                             "short": False})
+                             "short": True})
 
         j["attachments"].append({
             "text": "new nodes!",
